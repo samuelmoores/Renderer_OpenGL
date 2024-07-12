@@ -108,22 +108,33 @@ int main(void)
     glewInit();
 
     //Vertex Buffers
-    float positions[6] = {
-        -1.0f, -1.0f,
-         0.00f,  1.00f,
-         1.00f, -1.00f
+    float positions[8] = {
+        -1.0f, -1.0f, //0
+         1.0f, -1.0f, //1
+         1.0f,  1.0f, //2
+        -1.0f,  1.0f  //3
     };
 
-    for (int i = 0; i < 6; i++)
+    unsigned int indeces[] = {
+        0, 1, 2,
+        2, 3, 0
+    };
+
+    for (int i = 0; i < 8; i++)
     {
-        positions[i] /= 20.0f;
+        positions[i] /= 10.0f;
     }
 
     //Buffers
-    unsigned int buffer;
-    glGenBuffers(1, &buffer);
-    glBindBuffer(GL_ARRAY_BUFFER, buffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6, positions, GL_STATIC_DRAW);
+    unsigned int buffer_vertex;
+    glGenBuffers(1, &buffer_vertex);
+    glBindBuffer(GL_ARRAY_BUFFER, buffer_vertex);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 2, positions, GL_STATIC_DRAW);
+
+    unsigned int buffer_index;
+    glGenBuffers(1, &buffer_index);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer_index);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * 6, indeces, GL_STATIC_DRAW);
 
     //Attributes
     glEnableVertexAttribArray(0);
@@ -141,7 +152,7 @@ int main(void)
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
