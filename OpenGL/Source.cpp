@@ -5,12 +5,30 @@
 #include <string>
 #include <vector>
 
+#define ASSERT(x) if(!(x)) __debugbreak();
+#define GLCall(x) GLClearErrors(); x; ASSERT(GLLogCall())
+
 enum type { NONE = -1, VERTEX = 0, FRAGMENT = 1 };
 
 struct ShaderSource {
     std::string VertexSource;
     std::string FragmentSource;
 };
+
+static void GLClearErrors()
+{
+    while (glGetError() != GL_NO_ERROR);
+}
+
+static bool GLLogCall()
+{
+    while (GLenum error = glGetError())
+    {
+        std::cout << "[OpenGL error]: " << error << std::endl;
+        return false;
+    }
+    return true;
+}
 
  ShaderSource ParseShader(const std::string path)
 {
@@ -152,7 +170,7 @@ int main(void)
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+        GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
