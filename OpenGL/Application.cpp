@@ -99,44 +99,19 @@ int main(void)
     }
 
     //----------------------------Vertex Array------------------------------------
-    //unsigned int vao;
-    //glGenVertexArrays(1, &vao);
-    //glBindVertexArray(vao);
-
     VertexArray va;
     VertexBuffer vb(positions, 4 * 2 * sizeof(float));
     VertexBufferLayout layout;
     layout.Push<float>(2);
     va.AddBuffer(vb, layout);
-    
-    //----------------------Vertex Buffer-----------------------------------------------------------
-    //unsigned int buffer;
-    //glGenBuffers(1, &buffer);
-    //glBindBuffer(GL_ARRAY_BUFFER, buffer);
-    //glBufferData(GL_ARRAY_BUFFER, 4 * 2 * sizeof(float), positions, GL_STATIC_DRAW);
-
-    //------------------------Vertex Layout---------------------------------------------------
-    //GLCall(glEnableVertexAttribArray(0));
-    //glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
-
+ 
     //------------------------------Index Buffer-------------------------------------------
     IndexBuffer ib(indeces, 6);
-    //unsigned int ibo;
-    //glGenBuffers(1, &ibo);
-    //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-    //glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), indeces, GL_STATIC_DRAW);
 
     //-----------------------------Shaders-------------------------------------------------------------
     Shader shader("Shaders.txt");
     shader.Bind();
     shader.SetUniform4f("u_Color", 0.0f, 0.5f, 0.5f, 1.0f);
-    //ShaderSource src;
-    //src = ParseShader("Shaders.txt");
-    //unsigned int shader = CreateShader(src.VertexSource, src.FragmentSource);
-    //glUseProgram(shader);
-    //int location = glGetUniformLocation(shader, "u_Color");
-    //ASSERT(location != -1)
-    //glUniform4f(location, 0.5f, 0.0f, 0.5f, 1.0f);
     
     //-----------------------------Animation--------------------
     float g = 0.0f;
@@ -147,10 +122,6 @@ int main(void)
     ib.Unbind();
     va.Unbind();
     shader.Unbind();
-    //glBindVertexArray(0);
-    //glBindBuffer(GL_ARRAY_BUFFER, 0);
-    //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    //glUseProgram(0);
 
     /* -------------------------Loop until the user closes the window----------------------------------- */
     while (!glfwWindowShouldClose(window))
@@ -161,23 +132,12 @@ int main(void)
         //Bind Shader
         shader.Bind();
         shader.SetUniform4f("u_Color", 0.0f, g, 0.5f, 1.0f);
-        //glUseProgram(shader);
-        //glUniform4f(location, 0.0f, g, 0.5f, 1.0f);
-
-        //Bind Vertex Buffer
-        //vb.Bind();
-
-        //Set Vertex Layout
-        //GLCall(glEnableVertexAttribArray(0));
-        //glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
 
         //Bind Vertex Array
         va.Bind();
-        //glBindVertexArray(vao);
 
         //Bind Index Buffer
         ib.Bind();
-        //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
 
         //Issue Draw Call
         GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
