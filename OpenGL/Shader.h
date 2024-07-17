@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <unordered_map>
 
 enum type { NONE = -1, VERTEX = 0, FRAGMENT = 1 };
 
@@ -12,6 +13,8 @@ class Shader {
 private:
 	unsigned int m_Renderer_ID;
 	const std::string m_Filepath;
+	std::unordered_map<std::string, int> m_UniformLocationCache;
+
 public:
 	Shader(const std::string& filepath);
 	~Shader();

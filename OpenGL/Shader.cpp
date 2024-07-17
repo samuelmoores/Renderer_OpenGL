@@ -36,12 +36,16 @@ void Shader::SetUniform4f(const std::string& name, float f1, float f2, float f3,
 
 int Shader::GetUniform4fLocation(const std::string& name)
 {
+    if (m_UniformLocationCache.find(name) != m_UniformLocationCache.end())
+        return m_UniformLocationCache[name];
+
     int location = glGetUniformLocation(m_Renderer_ID, name.c_str());
 
     if (location == -1)
     {
         std::cout << "shader doesn't exist\n";
     }
+    m_UniformLocationCache[name] = location;
 
     return location;
 }

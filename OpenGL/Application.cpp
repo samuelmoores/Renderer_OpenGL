@@ -160,7 +160,7 @@ int main(void)
 
         //Bind Shader
         shader.Bind();
-        shader.SetUniform4f("u_Color", 0.0f, g, 1.0f, 1.0f);
+        shader.SetUniform4f("u_Color", 0.0f, g, 0.5f, 1.0f);
         //glUseProgram(shader);
         //glUniform4f(location, 0.0f, g, 0.5f, 1.0f);
 
