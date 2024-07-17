@@ -123,24 +123,21 @@ int main(void)
     va.Unbind();
     shader.Unbind();
 
+    //Renderer
+    Renderer renderer;
+
     /* -------------------------Loop until the user closes the window----------------------------------- */
     while (!glfwWindowShouldClose(window))
     {
         /* Render here */
-        glClear(GL_COLOR_BUFFER_BIT);
+        renderer.Clear();
 
         //Bind Shader
         shader.Bind();
         shader.SetUniform4f("u_Color", 0.0f, g, 0.5f, 1.0f);
 
-        //Bind Vertex Array
-        va.Bind();
-
-        //Bind Index Buffer
-        ib.Bind();
-
         //Issue Draw Call
-        GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
+        renderer.Draw(va, ib, shader);
 
         //Shader Logic
         if (g > 1.0f)
