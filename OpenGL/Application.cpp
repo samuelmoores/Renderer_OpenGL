@@ -6,6 +6,7 @@
 #include "Renderer.h"
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
+#include "VertexArray.h"
 
 
 
@@ -104,7 +105,7 @@ int main(void)
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     /* Create a windowed mode window and its OpenGL context */
     window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
@@ -136,44 +137,83 @@ int main(void)
         positions[i] /= 10.0f;
     }
 
-    //Vertex Array
-    unsigned int vertex_array;
-    glGenVertexArrays(1, &vertex_array);
-    glBindVertexArray(vertex_array);
+    //----------------------------Vertex Array------------------------------------
+    //unsigned int vao;
+    //glGenVertexArrays(1, &vao);
+    //glBindVertexArray(vao);
 
-    VertexBuffer* vb = new VertexBuffer(positions, 4 * 2 * sizeof(unsigned int));
-    IndexBuffer* ib = new IndexBuffer(indeces, 6);
+    VertexArray va;
+    VertexBuffer vb(positions, 4 * 2 * sizeof(float));
+    VertexBufferLayout layout;
+    layout.Push<float>(2);
+    va.AddBuffer(vb, layout);
+    
+    //----------------------Vertex Buffer-----------------------------------------------------------
+    //unsigned int buffer;
+    //glGenBuffers(1, &buffer);
+    //glBindBuffer(GL_ARRAY_BUFFER, buffer);
+    //glBufferData(GL_ARRAY_BUFFER, 4 * 2 * sizeof(float), positions, GL_STATIC_DRAW);
 
-    //Attributes
-    GLCall(glEnableVertexAttribArray(0));
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
+    //------------------------Vertex Layout---------------------------------------------------
+    //GLCall(glEnableVertexAttribArray(0));
+    //glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
 
-    //Shaders
+    //------------------------------Index Buffer-------------------------------------------
+    IndexBuffer ib(indeces, 6);
+    //unsigned int ibo;
+    //glGenBuffers(1, &ibo);
+    //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+    //glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), indeces, GL_STATIC_DRAW);
+
+    //-----------------------------Shaders-------------------------------------------------------------
     ShaderSource src;
     src = ParseShader("Shaders.txt");
     unsigned int shader = CreateShader(src.VertexSource, src.FragmentSource);
-    
     glUseProgram(shader);
     int location = glGetUniformLocation(shader, "u_Color");
     ASSERT(location != -1)
     glUniform4f(location, 0.5f, 0.0f, 0.5f, 1.0f);
-
+    
+    //-----------------------------Animation--------------------
     float g = 0.0f;
     float inc = 0.01f;
 
-    /* Loop until the user closes the window */
+    //-----------------------Unbind Everything-----------------------------
+    vb.Unbind();
+    ib.Unbind();
+    va.Unbind();
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    glUseProgram(0);
+
+    /* -------------------------Loop until the user closes the window----------------------------------- */
     while (!glfwWindowShouldClose(window))
     {
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT);
 
+        //Bind Shader
         glUseProgram(shader);
         glUniform4f(location, 0.0f, g, 0.5f, 1.0f);
-        GLCall(glBindVertexArray(vertex_array));
-        ib->Bind();
 
+        //Bind Vertex Buffer
+        //vb.Bind();
+
+        //Set Vertex Layout
+
+        //Bind Vertex Array
+        va.Bind();
+        //glBindVertexArray(vao);
+
+        //Bind Index Buffer
+        ib.Bind();
+        //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+
+        //Issue Draw Call
         GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
 
+        //Shader Logic
         if (g > 1.0f)
             inc *= -1;
         else if (g < 0.0f)
@@ -188,9 +228,7 @@ int main(void)
         glfwPollEvents();
     }
 
-    delete vb;
-    delete ib;
-
+    
     glfwTerminate();
     return 0;
 }

@@ -10,7 +10,7 @@ VertexBuffer::VertexBuffer(const void* data, unsigned int size)
 
 VertexBuffer::~VertexBuffer()
 {
-    GLCall(glDeleteBuffers(1, &m_Renderer_ID))
+    GLCall(glDeleteBuffers(1, &m_Renderer_ID));
 }
 
 void VertexBuffer::Bind() const
