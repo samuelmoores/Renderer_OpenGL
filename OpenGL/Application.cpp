@@ -7,92 +7,53 @@
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
 #include "VertexArray.h"
+#include "Shader.h"
 
-
-
-enum type { NONE = -1, VERTEX = 0, FRAGMENT = 1 };
-
-struct ShaderSource {
-    std::string VertexSource;
-    std::string FragmentSource;
-};
-
-
- ShaderSource ParseShader(const std::string path)
-{
-    std::ifstream fin(path);
-    std::string currentLine;
-    type ShaderType = NONE;
-    ShaderSource src;
-
-    while (getline(fin, currentLine))
-    {
-        if (currentLine.find("#shader VERTEX") != std::string::npos)
-            ShaderType = VERTEX;
-        else if (currentLine.find("#shader FRAGMENT") != std::string::npos)
-            ShaderType = FRAGMENT;
-        else
-        {
-            switch (ShaderType)
-            {
-            case VERTEX:
-                src.VertexSource += (currentLine + "\n");
-                break;
-            case FRAGMENT:
-                src.FragmentSource += (currentLine + "\n");
-                break;
-            default:
-                std::cout << "No shader type in shader file\n";
-            }
-        }
-    }
-
-    return src;
-}
-
-static unsigned int CompileShader(unsigned int type, const std::string& source)
-{
-    unsigned int id = glCreateShader(type);
-    const char* src = source.c_str();
-    glShaderSource(id, 1, &src, nullptr);
-    glCompileShader(id);
-
-    //Error Handling
-    int result;
-    glGetShaderiv(id, GL_COMPILE_STATUS, &result);
-
-    if (result == GL_FALSE)
-    {
-        int message_length; //not used outside gl functions
-        char message[1024];
-        
-        glGetShaderiv(id, GL_INFO_LOG_LENGTH, &message_length);
-        glGetShaderInfoLog(id, 1024, &message_length, message);
-       
-        std::cout << (type == GL_VERTEX_SHADER ? "vertex " : "fragment ");
-        std::cout << "shader compilation fail: ";
-        std::cout << "message length: " << message_length << std::endl;
-        std::cout << message << std::endl;
-    }
-
-    return id;
-}
-
-static unsigned int CreateShader(const std::string& vertexShader, const std::string& fragmentShader)
-{
-    unsigned int program = glCreateProgram();
-    unsigned int vs = CompileShader(GL_VERTEX_SHADER, vertexShader);
-    unsigned int fs = CompileShader(GL_FRAGMENT_SHADER, fragmentShader);
-
-    glAttachShader(program, vs);
-    glAttachShader(program, fs);
-    glLinkProgram(program);
-    glValidateProgram(program);
-    glDeleteShader(vs);
-    glDeleteShader(fs);
-
-    return program;
-}
+// 
+//
+//static unsigned int CompileShader(unsigned int type, const std::string& source)
+//{
+//    unsigned int id = glCreateShader(type);
+//    const char* src = source.c_str();
+//    glShaderSource(id, 1, &src, nullptr);
+//    glCompileShader(id);
+//
+//    //Error Handling
+//    int result;
+//    glGetShaderiv(id, GL_COMPILE_STATUS, &result);
+//
+//    if (result == GL_FALSE)
+//    {
+//        int message_length; //not used outside gl functions
+//        char message[1024];
+//        
+//        glGetShaderiv(id, GL_INFO_LOG_LENGTH, &message_length);
+//        glGetShaderInfoLog(id, 1024, &message_length, message);
+//       
+//        std::cout << (type == GL_VERTEX_SHADER ? "vertex " : "fragment ");
+//        std::cout << "shader compilation fail: ";
+//        std::cout << "message length: " << message_length << std::endl;
+//        std::cout << message << std::endl;
+//    }
+//
+//    return id;
+//}
+//
+//static unsigned int CreateShader(const std::string& vertexShader, const std::string& fragmentShader)
+//{
+//    unsigned int program = glCreateProgram();
+//    unsigned int vs = CompileShader(GL_VERTEX_SHADER, vertexShader);
+//    unsigned int fs = CompileShader(GL_FRAGMENT_SHADER, fragmentShader);
+//
+//    glAttachShader(program, vs);
+//    glAttachShader(program, fs);
+//    glLinkProgram(program);
+//    glValidateProgram(program);
+//    glDeleteShader(vs);
+//    glDeleteShader(fs);
+//
+//    return program;
+//}
 
 int main(void)
 {
@@ -166,13 +127,16 @@ int main(void)
     //glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), indeces, GL_STATIC_DRAW);
 
     //-----------------------------Shaders-------------------------------------------------------------
-    ShaderSource src;
-    src = ParseShader("Shaders.txt");
-    unsigned int shader = CreateShader(src.VertexSource, src.FragmentSource);
-    glUseProgram(shader);
-    int location = glGetUniformLocation(shader, "u_Color");
-    ASSERT(location != -1)
-    glUniform4f(location, 0.5f, 0.0f, 0.5f, 1.0f);
+    Shader shader("Shaders.txt");
+    shader.Bind();
+    shader.SetUniform4f("u_Color", 0.0f, 0.5f, 0.5f, 1.0f);
+    //ShaderSource src;
+    //src = ParseShader("Shaders.txt");
+    //unsigned int shader = CreateShader(src.VertexSource, src.FragmentSource);
+    //glUseProgram(shader);
+    //int location = glGetUniformLocation(shader, "u_Color");
+    //ASSERT(location != -1)
+    //glUniform4f(location, 0.5f, 0.0f, 0.5f, 1.0f);
     
     //-----------------------------Animation--------------------
     float g = 0.0f;
@@ -182,10 +146,11 @@ int main(void)
     vb.Unbind();
     ib.Unbind();
     va.Unbind();
-    glBindVertexArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    glUseProgram(0);
+    shader.Unbind();
+    //glBindVertexArray(0);
+    //glBindBuffer(GL_ARRAY_BUFFER, 0);
+    //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    //glUseProgram(0);
 
     /* -------------------------Loop until the user closes the window----------------------------------- */
     while (!glfwWindowShouldClose(window))
@@ -194,13 +159,17 @@ int main(void)
         glClear(GL_COLOR_BUFFER_BIT);
 
         //Bind Shader
-        glUseProgram(shader);
-        glUniform4f(location, 0.0f, g, 0.5f, 1.0f);
+        shader.Bind();
+        shader.SetUniform4f("u_Color", 0.0f, g, 1.0f, 1.0f);
+        //glUseProgram(shader);
+        //glUniform4f(location, 0.0f, g, 0.5f, 1.0f);
 
         //Bind Vertex Buffer
         //vb.Bind();
 
         //Set Vertex Layout
+        //GLCall(glEnableVertexAttribArray(0));
+        //glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
 
         //Bind Vertex Array
         va.Bind();
