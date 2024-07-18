@@ -8,52 +8,8 @@
 #include "IndexBuffer.h"
 #include "VertexArray.h"
 #include "Shader.h"
+#include "Texture.h"
 
-// 
-//
-//static unsigned int CompileShader(unsigned int type, const std::string& source)
-//{
-//    unsigned int id = glCreateShader(type);
-//    const char* src = source.c_str();
-//    glShaderSource(id, 1, &src, nullptr);
-//    glCompileShader(id);
-//
-//    //Error Handling
-//    int result;
-//    glGetShaderiv(id, GL_COMPILE_STATUS, &result);
-//
-//    if (result == GL_FALSE)
-//    {
-//        int message_length; //not used outside gl functions
-//        char message[1024];
-//        
-//        glGetShaderiv(id, GL_INFO_LOG_LENGTH, &message_length);
-//        glGetShaderInfoLog(id, 1024, &message_length, message);
-//       
-//        std::cout << (type == GL_VERTEX_SHADER ? "vertex " : "fragment ");
-//        std::cout << "shader compilation fail: ";
-//        std::cout << "message length: " << message_length << std::endl;
-//        std::cout << message << std::endl;
-//    }
-//
-//    return id;
-//}
-//
-//static unsigned int CreateShader(const std::string& vertexShader, const std::string& fragmentShader)
-//{
-//    unsigned int program = glCreateProgram();
-//    unsigned int vs = CompileShader(GL_VERTEX_SHADER, vertexShader);
-//    unsigned int fs = CompileShader(GL_FRAGMENT_SHADER, fragmentShader);
-//
-//    glAttachShader(program, vs);
-//    glAttachShader(program, fs);
-//    glLinkProgram(program);
-//    glValidateProgram(program);
-//    glDeleteShader(vs);
-//    glDeleteShader(fs);
-//
-//    return program;
-//}
 
 int main(void)
 {
@@ -81,11 +37,11 @@ int main(void)
     std::cout << glGetString(GL_VERSION) << std::endl;
 
     //Vertex Buffers
-    float positions[8] = {
-        -1.0f, -1.0f, //0
-         1.0f, -1.0f, //1
-         1.0f,  1.0f, //2
-        -1.0f,  1.0f  //3
+    float positions[] = {
+        -0.5f, -0.5f, 0.0f, 0.0f, //0
+         0.5f, -0.5f, 1.0f, 0.0f, //1
+         0.5f,  0.5f, 1.0f, 1.0f, //2
+        -0.5f,  0.5f, 0.0f, 1.0f  //3
     };
 
     unsigned int indeces[] = {
@@ -93,15 +49,15 @@ int main(void)
         2, 3, 0
     };
 
-    for (int i = 0; i < 8; i++)
-    {
-        positions[i] /= 10.0f;
-    }
+    //blending
+    GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+    GLCall(glEnable(GL_BLEND))
 
     //----------------------------Vertex Array------------------------------------
     VertexArray va;
-    VertexBuffer vb(positions, 4 * 2 * sizeof(float));
+    VertexBuffer vb(positions, 4 * 4 * sizeof(float));
     VertexBufferLayout layout;
+    layout.Push<float>(2);
     layout.Push<float>(2);
     va.AddBuffer(vb, layout);
  
@@ -109,9 +65,14 @@ int main(void)
     IndexBuffer ib(indeces, 6);
 
     //-----------------------------Shaders-------------------------------------------------------------
-    Shader shader("Shaders.txt");
+    Shader shader("res/shaders/Shaders.shader");
     shader.Bind();
     shader.SetUniform4f("u_Color", 0.0f, 0.5f, 0.5f, 1.0f);
+
+    //Texture
+    Texture texture("img/Logo.png");
+    texture.Bind();
+    //shader.SetUniform1i("u_Texture", 0);
     
     //-----------------------------Animation--------------------
     float g = 0.0f;
